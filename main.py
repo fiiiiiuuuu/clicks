@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv('API_KEY')
 
+
 def shorten_link(token):
     vk_url = 'https://api.vk.com/method/utils.getShortLink'
     try:
@@ -17,6 +18,7 @@ def shorten_link(token):
     except requests.exceptions.HTTPError:
         print("Ответ не был получен!")
 
+
 def count_clicks(token, key):
     vk_url = 'https://api.vk.com/method/utils.getLinkStats'
     try:
@@ -27,7 +29,8 @@ def count_clicks(token, key):
         print("Ответ не был получен!")
     except IndexError:
         return None
-        
+
+
 def is_shorten_link(user_url):
     if parsed_user_url.netloc == "vk.cc":
         return user_url
