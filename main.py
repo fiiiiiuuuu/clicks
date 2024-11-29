@@ -6,11 +6,6 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv('API_KEY')
 
-user_url = input("Введите ссылку:")
-
-if not user_url.startswith('https://'):
-    user_url = 'https://' + user_url
-
 def shorten_link(token):
     vk_url = 'https://api.vk.com/method/utils.getShortLink'
     try:
@@ -33,15 +28,22 @@ def count_clicks(token, key):
     except IndexError:
         return None
         
-def is_shorten_link():
+def is_shorten_link(user_url):
     if parsed_user_url.netloc == "vk.cc":
         return user_url
     else:
         return shorten_link(API_KEY)
+
+
+if __name__ == "__main__":
+    user_url = input("Введите ссылку:")
+
+    if not user_url.startswith('https://' or 'http://'):
+        user_url = 'http://' + user_url
     
+    parsed_user_url = urllib.parse.urlsplit(user_url)
+    short_link = is_shorten_link(user_url)
+    parsed_url = urllib.parse.urlparse(short_link)
 
-parsed_user_url = urllib.parse.urlsplit(user_url)
-short_link = is_shorten_link()
-parsed_url = urllib.parse.urlparse(short_link)
-
-print(f"Статистика переходов: {count_clicks(API_KEY, parsed_url)}")
+    print(f"Сокращенная ссылка: {short_link}")
+    print(f"Статистика переходов: {count_clicks(API_KEY, parsed_url)}")
