@@ -19,8 +19,8 @@ def count_clicks(api_key, key):
     return stats['response']['stats'][0]['views']
 
 
-def is_shorten_link(user_url, parsed_user_url, api_key):
-    
+def is_shorten_link(parsed_user_url):
+    return parsed_user_url.netloc == "vk.cc"
 
 
 def main():
@@ -32,7 +32,10 @@ def main():
         user_url = 'http://' + user_url
     
     parsed_user_url = urllib.parse.urlsplit(user_url)
-    short_link = is_shorten_link(user_url, parsed_user_url, VK_API_KEY)
+    if is_shorten_link(parsed_user_url):
+        short_link = user_url
+    else:
+        short_link = shorten_link(user_url, VK_API_KEY)
     parsed_url = urllib.parse.urlparse(short_link)
     try:
         print(f"Сокращенная ссылка: {short_link}")
