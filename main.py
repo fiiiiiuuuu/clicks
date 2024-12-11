@@ -3,50 +3,47 @@ import requests
 import urllib.parse
 from dotenv import load_dotenv
 
-load_dotenv()
-API_KEY = os.getenv('API_KEY')
 
-
-def shorten_link(token):
+def shorten_link(user_url, api_key):
     vk_url = 'https://api.vk.com/method/utils.getShortLink'
-    try:
-        response = requests.post(vk_url, data={"access_token": token, "url": user_url, "v": "5.199"})
-        response.raise_for_status()
-        return response.json()['response']['short_url']
-    except KeyError:
-        print("Ответ VK не соответсвует параметрам, проверьте ссылку!")
-    except requests.exceptions.HTTPError:
-        print("Ответ не был получен!")
+    response = requests.post(vk_url, data={"access_token": api_key, "url": user_url, "v": "5.199"})
+    response.raise_for_status()
+    return response.json()['response']['short_url']
 
 
-def count_clicks(token, key):
+def count_clicks(api_key, key):
     vk_url = 'https://api.vk.com/method/utils.getLinkStats'
-    try:
-        response = requests.post(vk_url, data={"access_token": token, "key": key.path.lstrip('/'), "interval": "forever", "v": "5.199"})
-        response.raise_for_status()
-        return response.json()['response']['stats'][0]['views']
-    except requests.exceptions.HTTPError:
-        print("Ответ не был получен!")
-    except IndexError:
-        return None
+    response = requests.post(vk_url, data={"access_token": api_key, "key": key.path.lstrip('/'), "interval": "forever", "v": "5.199"})
+    response.raise_for_status()
+    stats = response.json()
+    return stats['response']['stats'][0]['views']
 
 
-def is_shorten_link(user_url):
-    if parsed_user_url.netloc == "vk.cc":
-        return user_url
-    else:
-        return shorten_link(API_KEY)
+def is_shorten_link(user_url, parsed_user_url, api_key):
+    
 
 
-if __name__ == "__main__":
+def main():
+    load_dotenv('.env')
+    VK_API_KEY = os.environ['VK_API_KEY']
     user_url = input("Введите ссылку:")
 
     if not user_url.startswith('https://' or 'http://'):
         user_url = 'http://' + user_url
     
     parsed_user_url = urllib.parse.urlsplit(user_url)
-    short_link = is_shorten_link(user_url)
+    short_link = is_shorten_link(user_url, parsed_user_url, VK_API_KEY)
     parsed_url = urllib.parse.urlparse(short_link)
+    try:
+        print(f"Сокращенная ссылка: {short_link}")
+        print(f"Статистика переходов: {count_clicks(VK_API_KEY, parsed_url)}")
+    except KeyError:
+        print("Ответ VK не соответствует параметрам, проверьте ссылку!")
+    except requests.exceptions.HTTPError:
+        print("Ответ не был получен!")
+    except IndexError:
+        print("Статистика кликов отсутсвует!")
 
-    print(f"Сокращенная ссылка: {short_link}")
-    print(f"Статистика переходов: {count_clicks(API_KEY, parsed_url)}")
+
+if __name__ == "__main__":
+    main()
