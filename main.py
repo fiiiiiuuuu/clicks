@@ -11,35 +11,38 @@ def shorten_link(user_url, api_key):
     return response.json()['response']['short_url']
 
 
-def count_clicks(api_key, key):
+def count_clicks(api_key, short_link):
     vk_url = 'https://api.vk.com/method/utils.getLinkStats'
-    response = requests.post(vk_url, data={"access_token": api_key, "key": key.path.lstrip('/'), "interval": "forever", "v": "5.199"})
+    response = requests.post(vk_url, data={"access_token": api_key, "key": short_link.split('/')[-1], "interval": "forever", "v": "5.199"})
     response.raise_for_status()
-    stats = response.json()
-    return stats['response']['stats'][0]['views']
+    data = response.json()
+    if 'error' in data:
+        if data['error']['error_code'] == 100:
+            return True
+        return False
+    return False
 
 
 def is_shorten_link(user_url, api_key):
     vk_url = 'https://api.vk.com/method/utils.getShortLink'
     response = requests.post(vk_url, data={"access_token": api_key, "url": user_url, "v": "5.199"})
     response.raise_for_status()
-    if 'error' in response.json():
-        return user_url
-    else:
-        return shorten_link(user_url, api_key)
+    return 'error' not in response.json()
         
-
 def main():
     load_dotenv('.env')
     vk_api_key = os.environ['VK_API_KEY']
     user_url = input("Введите ссылку:")
-    
-    short_link = is_shorten_link(user_url, vk_api_key)
-    parsed_url = urllib.parse.urlparse(short_link)
+
     try:
-        print(f"Сокращенная ссылка: {short_link}")
-        print(f"Статистика переходов: {count_clicks(vk_api_key, parsed_url)}")
-    except KeyError:
+        if is_shorten_link(user_url, vk_api_key) == False:
+            print(f"Статистика переходов: {count_clicks(vk_api_key, user_url)}")
+        else:
+            short_link = shorten_link(user_url, vk_api_key)
+            print(f"Сокращенная ссылка: {short_link}")
+            print(f"Статистика переходов: {count_clicks(vk_api_key, short_link)}")
+    except KeyError as e:
+        print(f"Ошибка в ключе: {e}")
         print("Ответ VK не соответствует параметрам, проверьте ссылку!")
     except requests.exceptions.HTTPError:
         print("Ответ не был получен!")
