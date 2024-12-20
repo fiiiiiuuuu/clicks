@@ -12,30 +12,30 @@ def shorten_link(user_url, api_key):
 
 
 def count_clicks(api_key, short_link):
+    short_link = urllib.parse.urlsplit(short_link)
     vk_url = 'https://api.vk.com/method/utils.getLinkStats'
-    response = requests.post(vk_url, data={"access_token": api_key, "key": short_link.split('/')[-1], "interval": "forever", "v": "5.199"})
+    response = requests.post(vk_url, data={"access_token": api_key, "key": short_link.path.lstrip('/'), "interval": "forever", "v": "5.199"})
     response.raise_for_status()
-    data = response.json()
-    if 'error' in data:
-        if data['error']['error_code'] == 100:
-            return True
-        return False
-    return False
+    stats = response.json()
+    return stats['response']['stats'][0]['views']
 
 
 def is_shorten_link(user_url, api_key):
     vk_url = 'https://api.vk.com/method/utils.getShortLink'
     response = requests.post(vk_url, data={"access_token": api_key, "url": user_url, "v": "5.199"})
     response.raise_for_status()
-    return 'error' not in response.json()
-        
+    data = response.json()
+    if 'error' in data:
+        return True
+    return False
+    
 def main():
     load_dotenv('.env')
     vk_api_key = os.environ['VK_API_KEY']
     user_url = input("Введите ссылку:")
 
     try:
-        if is_shorten_link(user_url, vk_api_key) == False:
+        if is_shorten_link(user_url, vk_api_key) is True:
             print(f"Статистика переходов: {count_clicks(vk_api_key, user_url)}")
         else:
             short_link = shorten_link(user_url, vk_api_key)
