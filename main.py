@@ -40,7 +40,6 @@ def main():
         else:
             short_link = shorten_link(user_url, vk_api_key)
             print(f"Сокращенная ссылка: {short_link}")
-            print(f"Статистика переходов: {count_clicks(vk_api_key, short_link)}")
     except KeyError as e:
         print(f"Ошибка в ключе: {e}")
         print("Ответ VK не соответствует параметрам, проверьте ссылку!")
