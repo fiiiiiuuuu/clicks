@@ -24,10 +24,8 @@ def is_shorten_link(user_url, api_key):
     vk_url = 'https://api.vk.com/method/utils.getShortLink'
     response = requests.post(vk_url, data={"access_token": api_key, "url": user_url, "v": "5.199"})
     response.raise_for_status()
-    data = response.json()
-    if 'error' in data:
-        return True
-    return False
+    is_short_link = response.json()
+    return 'error' in is_short_link
     
 def main():
     load_dotenv('.env')
