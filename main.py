@@ -1,6 +1,7 @@
 import os
 import requests
 import urllib.parse
+import argparse
 from dotenv import load_dotenv
 
 
@@ -29,12 +30,14 @@ def is_shorten_link(user_url, api_key):
     
 def main():
     load_dotenv('.env')
-    vk_api_key = os.environ['VK_API_KEY']
-    user_url = input("Введите ссылку:")
+    vk_api_key = os.getenv('VK_API_KEY')
+    parser = argparse.ArgumentParser(description='Ввод ссылки')
+    parser.add_argument('url', help='Введите ссылку')
+    user_url = parser.parse_args().url
 
     try:
         if is_shorten_link(user_url, vk_api_key) is True:
-            print(f"Статистика переходов: {count_clicks(vk_api_key, user_url)}")
+            print("Статистика переходов: ", count_clicks(vk_api_key, user_url))
         else:
             short_link = shorten_link(user_url, vk_api_key)
             print(f"Сокращенная ссылка: {short_link}")
